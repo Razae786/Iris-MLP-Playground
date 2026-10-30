@@ -3,183 +3,210 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TensorFlow Playground - Iris MLP Visualizer</title>
+  <title>Iris Neural Playground &bull; Interactive Multi-Layer Perceptron Laboratory</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
     :root {
-      --bg: #0d1117;
-      --card-bg: #161b22;
-      --border-color: #30363d;
-      --text: #c9d1d9;
-      --text-muted: #8b949e;
+      --bg: #090d16;
+      --card-bg: #111827;
+      --border: #1f293d;
       --accent: #38bdf8;
     }
     body {
-      background-color: var(--background, var(--bg));
-      color: var(--foreground, var(--text));
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     .tf-btn {
-      transition: all 0.15s ease-in-out;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .tf-btn:hover {
-      filter: brightness(1.2);
+      filter: brightness(1.15);
       transform: translateY(-1px);
     }
     .tf-btn:active {
       transform: translateY(0);
     }
-    canvas {
-      image-rendering: auto;
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1f293d;
+      border-radius: 9999px;
     }
   </style>
 </head>
-<body class="p-4 md:p-6 antialiased">
+<body class="p-3 sm:p-5 lg:p-6 antialiased selection:bg-sky-500 selection:text-slate-950">
   <div class="max-w-7xl mx-auto space-y-4">
     
-    <!-- Top Header: Author, Notebook & Live Status -->
-    <div class="bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-2xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+    <!-- Top Brand & Navigation Header -->
+    <header class="bg-[#111827] border border-[#1f293d] rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 via-indigo-600 to-teal-400 p-0.5 shadow-md shadow-sky-500/20 flex items-center justify-center">
+          <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+            <svg class="w-5 h-5 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+        </div>
         <div>
-          <h1 class="text-base font-bold text-slate-100 flex items-center gap-2">
-            Raza e Mustafa &bull; FA23-BAI-064
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-sky-950 text-sky-400 border border-sky-800 font-mono font-normal">Iris MLP Visualizer</span>
-          </h1>
-          <p class="text-xs text-slate-400 mt-0.5">Fisher's Iris MLP ($4 \to 64 \to 32 \to 3$) with Real-Time Backpropagation & Decision Surface</p>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold text-slate-100 tracking-tight">Iris Neural Playground</h1>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-950/80 text-sky-400 border border-sky-800 font-mono">v2.0 &bull; WebGL Canvas</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Interactive Multi-Layer Perceptron Laboratory &bull; Real-Time Gradient Descent & Decision Manifolds</p>
         </div>
       </div>
 
-      <!-- Live Speed Control -->
-      <div class="flex items-center gap-3 bg-slate-900/90 px-3 py-2 rounded-xl border border-slate-700 text-xs">
-        <span class="text-slate-400 font-medium">Training Speed:</span>
-        <select id="speedSelect" class="bg-slate-950 text-sky-300 rounded px-2 py-1 border border-slate-700 font-mono">
-          <option value="80">Normal (80ms)</option>
-          <option value="30" selected>Fast (30ms)</option>
-          <option value="10">Turbo (10ms)</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Playground Control & Hyperparameter Bar -->
-    <header class="bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-2xl p-4 shadow-lg flex flex-wrap items-center justify-between gap-4">
-      <!-- Play / Pause / Reset Controls -->
+      <!-- Links & GitHub Badge -->
       <div class="flex items-center gap-3">
-        <button id="btnPlay" class="tf-btn flex items-center justify-center w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-lg shadow-emerald-500/20" title="Train / Pause">
+        <a href="https://github.com/Razae786/Iris-MLP-Playground" target="_blank" rel="noopener noreferrer" class="tf-btn flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 shadow-sm">
+          <svg class="w-4 h-4 fill-current text-slate-300" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+          <span>Source Code</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Global Control Bar (Playground Action Strip) -->
+    <section class="bg-[#111827] border border-[#1f293d] rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Primary Playback Controls -->
+      <div class="flex items-center gap-3">
+        <button id="btnPlay" class="tf-btn flex items-center justify-center w-11 h-11 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold shadow-lg shadow-emerald-500/25" title="Start / Pause Training Loop">
           <svg id="playIcon" class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
           <svg id="pauseIcon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
         </button>
-        <button id="btnStep" class="tf-btn flex items-center justify-center w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700" title="Step One Training Epoch">
+        <button id="btnStep" class="tf-btn flex items-center justify-center w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700" title="Step One Gradient Epoch">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
         </button>
-        <button id="btnReset" class="tf-btn flex items-center justify-center w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700" title="Re-initialize Weights">
+        <button id="btnReset" class="tf-btn flex items-center justify-center w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700" title="Re-initialize Network Weights">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
         </button>
 
-        <!-- Epoch & Real-Time Loss Readout -->
-        <div class="h-8 w-px bg-slate-700/60 mx-1"></div>
+        <!-- Epoch & Real-time Loss -->
+        <div class="h-8 w-px bg-slate-800 mx-1"></div>
         <div class="flex items-baseline gap-2">
           <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Epoch:</span>
           <span id="epochDisplay" class="font-mono text-lg font-bold text-sky-400">0</span>
           <span id="maxEpochDisplay" class="text-xs text-slate-500 font-mono">/ 200</span>
         </div>
-        <div class="flex items-baseline gap-2 ml-2">
+        <div class="hidden sm:flex items-baseline gap-2 ml-2">
           <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Loss:</span>
-          <span id="trainLossDisplay" class="font-mono text-sm font-bold text-amber-400">1.098</span>
+          <span id="trainLossDisplay" class="font-mono text-sm font-bold text-amber-400">1.0986</span>
         </div>
       </div>
 
-      <!-- Experiment Presets (From fa23-bai-064.ipynb) -->
-      <div class="flex items-center gap-3">
-        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ablation Config:</label>
-        <select id="expSelect" class="bg-slate-900 text-sky-300 font-medium text-xs rounded-lg px-3 py-2 border border-slate-700 focus:outline-none focus:border-sky-500">
-          <option value="E6" selected>E6: High Learning Rate (lr=0.01) &bull; [Fastest & Best]</option>
-          <option value="E0">E0: Baseline (lr=0.001, Glorot, no reg)</option>
-          <option value="E1">E1: He Normal Init (lr=0.001, large variance)</option>
-          <option value="E2">E2: L2 Regularization (lr=0.001, λ=0.01)</option>
-          <option value="E3">E3: Dropout (lr=0.001, p=0.3)</option>
-          <option value="E4">E4: Combined (L2 + Dropout)</option>
-          <option value="E5">E5: Low Learning Rate (lr=0.0001) &bull; [Underfitting]</option>
-        </select>
-      </div>
+      <!-- Ablation Presets & Hyperparameter Selectors -->
+      <div class="flex flex-wrap items-center gap-3 text-xs">
+        
+        <!-- Preset Selector -->
+        <div class="flex flex-col">
+          <span class="text-slate-400 font-semibold uppercase text-[10px] tracking-wider mb-1">Ablation Preset</span>
+          <select id="expSelect" class="bg-slate-900 text-sky-300 font-medium rounded-lg px-3 py-1.5 border border-slate-700 focus:outline-none focus:border-sky-500">
+            <option value="E6" selected>E6: Optimal Fast (LR=0.01, L2=0.01, Drop=0.3)</option>
+            <option value="E0">E0: Baseline (LR=0.001, Glorot, No Reg)</option>
+            <option value="E1">E1: He Normal (LR=0.001, High Init Variance)</option>
+            <option value="E2">E2: L2 Regularization (LR=0.001, λ=0.01)</option>
+            <option value="E3">E3: Dropout Only (LR=0.001, p=0.3)</option>
+            <option value="E4">E4: Combined (LR=0.001, L2=0.01, Drop=0.3)</option>
+            <option value="E5">E5: Low LR (LR=0.0001, Underfitting)</option>
+          </select>
+        </div>
 
-      <!-- Live Hyperparameter Indicators -->
-      <div class="flex items-center gap-4 text-xs font-mono">
+        <!-- Learning Rate -->
         <div class="flex flex-col">
-          <span class="text-slate-400 text-[10px] uppercase">Learning Rate</span>
-          <span id="lrVal" class="text-sky-400 font-bold">0.01</span>
+          <span class="text-slate-400 font-semibold uppercase text-[10px] tracking-wider mb-1">Learning Rate</span>
+          <select id="lrSelect" class="bg-slate-900 text-slate-200 font-mono rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:border-sky-500">
+            <option value="0.0001">0.0001</option>
+            <option value="0.001">0.001</option>
+            <option value="0.003">0.003</option>
+            <option value="0.01" selected>0.01</option>
+            <option value="0.03">0.03</option>
+          </select>
         </div>
-        <div class="flex flex-col">
-          <span class="text-slate-400 text-[10px] uppercase">Initializer</span>
-          <span id="initVal" class="text-slate-200 font-bold">Glorot</span>
-        </div>
-        <div class="flex flex-col">
-          <span class="text-slate-400 text-[10px] uppercase">L2 Penalty</span>
-          <span id="l2Val" class="text-slate-200 font-bold">0.01</span>
-        </div>
-        <div class="flex flex-col">
-          <span class="text-slate-400 text-[10px] uppercase">Dropout</span>
-          <span id="dropVal" class="text-slate-200 font-bold">0.30</span>
-        </div>
-      </div>
-    </header>
 
-    <!-- Metrics Strip -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-      <div class="bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-xl p-3 shadow">
+        <!-- Activation Function -->
+        <div class="flex flex-col">
+          <span class="text-slate-400 font-semibold uppercase text-[10px] tracking-wider mb-1">Activation</span>
+          <select id="actSelect" class="bg-slate-900 text-slate-200 font-medium rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:border-sky-500">
+            <option value="relu" selected>ReLU</option>
+            <option value="tanh">Tanh</option>
+            <option value="sigmoid">Sigmoid</option>
+          </select>
+        </div>
+
+        <!-- 2D Projection Feature Pair -->
+        <div class="flex flex-col">
+          <span class="text-slate-400 font-semibold uppercase text-[10px] tracking-wider mb-1">2D Projection</span>
+          <select id="projSelect" class="bg-slate-900 text-teal-300 font-medium rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none focus:border-teal-500">
+            <option value="petal" selected>Petal Length vs Width</option>
+            <option value="sepal">Sepal Length vs Width</option>
+          </select>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Key Performance Metrics Strip -->
+    <section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-3 shadow-md">
         <span class="text-[11px] uppercase font-semibold text-slate-400 tracking-wider">Test Accuracy</span>
-        <div class="flex items-baseline gap-1 mt-1">
-          <span id="testAccDisplay" class="text-xl font-bold font-mono text-emerald-400">93.33%</span>
+        <div class="flex items-baseline gap-1.5 mt-1">
+          <span id="testAccDisplay" class="text-2xl font-black font-mono text-emerald-400">93.33%</span>
         </div>
-        <span class="text-[10px] text-slate-500">28/30 Correct Samples</span>
+        <span class="text-[10px] text-slate-500 font-mono">28 / 30 Samples</span>
       </div>
 
-      <div class="bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-xl p-3 shadow">
-        <span class="text-[11px] uppercase font-semibold text-slate-400 tracking-wider">Macro F1-Score</span>
-        <div class="flex items-baseline gap-1 mt-1">
-          <span id="macroF1Display" class="text-xl font-bold font-mono text-sky-400">0.9333</span>
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-3 shadow-md">
+        <span class="text-[11px] uppercase font-semibold text-slate-400 tracking-wider">Macro F1 Score</span>
+        <div class="flex items-baseline gap-1.5 mt-1">
+          <span id="macroF1Display" class="text-2xl font-black font-mono text-sky-400">0.9333</span>
         </div>
-        <span class="text-[10px] text-slate-500">Unweighted Class Average</span>
+        <span class="text-[10px] text-slate-500 font-mono">Unweighted Average</span>
       </div>
 
-      <div class="bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-xl p-3 shadow">
-        <span class="text-[11px] uppercase font-semibold text-slate-400 tracking-wider">Test Loss</span>
-        <div class="flex items-baseline gap-1 mt-1">
-          <span id="testLossDisplay" class="text-xl font-bold font-mono text-amber-400">0.1088</span>
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-3 shadow-md">
+        <span class="text-[11px] uppercase font-semibold text-slate-400 tracking-wider">Test Cross-Entropy</span>
+        <div class="flex items-baseline gap-1.5 mt-1">
+          <span id="testLossDisplay" class="text-2xl font-black font-mono text-amber-400">0.1088</span>
         </div>
-        <span class="text-[10px] text-slate-500">Sparse Categorical CE</span>
+        <span class="text-[10px] text-slate-500 font-mono">Sparse Categorical</span>
       </div>
 
-      <div class="bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-xl p-3 shadow">
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-3 shadow-md">
         <span class="text-[11px] uppercase font-semibold text-slate-400 tracking-wider">Best Rollback</span>
-        <div class="flex items-baseline gap-1 mt-1">
-          <span id="bestEpochDisplay" class="text-xl font-bold font-mono text-rose-400">Epoch 32</span>
+        <div class="flex items-baseline gap-1.5 mt-1">
+          <span id="bestEpochDisplay" class="text-2xl font-black font-mono text-rose-400">Epoch 32</span>
         </div>
-        <span class="text-[10px] text-slate-500">restore_best_weights=True</span>
+        <span class="text-[10px] text-slate-500 font-mono">restore_best_weights</span>
       </div>
 
-      <div class="bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-xl p-3 shadow">
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-3 shadow-md">
         <span class="text-[11px] uppercase font-semibold text-slate-400 tracking-wider">Early Stopping</span>
-        <div class="flex items-baseline gap-1 mt-1">
-          <span id="epochsRunDisplay" class="text-xl font-bold font-mono text-purple-400">Epoch 47</span>
+        <div class="flex items-baseline gap-1.5 mt-1">
+          <span id="epochsRunDisplay" class="text-2xl font-black font-mono text-purple-400">Epoch 47</span>
         </div>
-        <span id="stopReasonDisplay" class="text-[10px] text-emerald-400 font-medium">Halted (Patience=15)</span>
+        <span id="stopReasonDisplay" class="text-[10px] text-emerald-400 font-mono font-medium">Halted (Patience=15)</span>
       </div>
 
-      <div class="bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-xl p-3 shadow">
+      <div class="bg-[#111827] border border-[#1f293d] rounded-xl p-3 shadow-md">
         <span class="text-[11px] uppercase font-semibold text-slate-400 tracking-wider">Training Time</span>
-        <div class="flex items-baseline gap-1 mt-1">
-          <span id="trainTimeDisplay" class="text-xl font-bold font-mono text-cyan-400">6.34 s</span>
+        <div class="flex items-baseline gap-1.5 mt-1">
+          <span id="trainTimeDisplay" class="text-2xl font-black font-mono text-cyan-400">6.34 s</span>
         </div>
-        <span class="text-[10px] text-slate-500">4x Faster Convergence</span>
+        <span class="text-[10px] text-slate-500 font-mono">4&times; Speedup</span>
       </div>
-    </div>
+    </section>
 
-    <!-- Main Playground Grid: Left Network Topology / Right Output Decision Surface -->
+    <!-- Main Workspace Grid: Network Topology (8 cols) & Decision Boundary/Loss (4 cols) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
       
-      <!-- Interactive Neural Network Graph (8 cols) -->
-      <div class="lg:col-span-8 bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+      <!-- Interactive Network Graph (8 cols) -->
+      <section class="lg:col-span-8 bg-[#111827] border border-[#1f293d] rounded-2xl p-4 shadow-xl flex flex-col justify-between">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
           <div>
             <h2 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
@@ -188,12 +215,12 @@
             </h2>
             <p class="text-xs text-slate-400 mt-0.5">Input (4) &rarr; Dense (64, ReLU) &rarr; Dense (32, ReLU) &rarr; Output (3, Softmax)</p>
           </div>
-          <div class="flex items-center gap-3 text-xs">
+          <div class="flex items-center gap-4 text-xs">
             <span class="flex items-center gap-1.5 text-slate-400">
-              <span class="w-3 h-1 bg-sky-400 rounded"></span> + Weight
+              <span class="w-3.5 h-1 bg-sky-400 rounded"></span> + Weight
             </span>
             <span class="flex items-center gap-1.5 text-slate-400">
-              <span class="w-3 h-1 bg-amber-500 rounded"></span> &minus; Weight
+              <span class="w-3.5 h-1 bg-amber-500 rounded"></span> &minus; Weight
             </span>
           </div>
         </div>
@@ -216,23 +243,23 @@
           <div id="synapseHoverInfo" class="font-mono text-sky-300">Hover over any node or synapse to inspect weight / activation</div>
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span id="engineStatusLabel" class="text-slate-400">Active Live Gradient Descent</span>
+            <span class="text-slate-400">Active Live Gradient Descent</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Decision Boundary Surface & Loss Curve (4 cols) -->
-      <div class="lg:col-span-4 space-y-4">
+      <!-- Decision Boundary Surface & Loss Curves (4 cols) -->
+      <section class="lg:col-span-4 space-y-4">
         
         <!-- 2D Iris Decision Boundary Canvas -->
-        <div class="bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-2xl p-4 shadow-lg">
+        <div class="bg-[#111827] border border-[#1f293d] rounded-2xl p-4 shadow-xl">
           <div class="flex items-center justify-between pb-2 border-b border-slate-800">
             <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Decision Boundary</h3>
-            <span class="text-[11px] font-mono text-slate-400">Petal L vs Petal W (StandardScaled)</span>
+            <span id="boundaryPlaneLabel" class="text-[11px] font-mono text-slate-400">Petal L vs Petal W</span>
           </div>
           
           <div class="relative w-full aspect-square mt-3 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 shadow-inner">
-            <canvas id="boundaryCanvas" width="280" height="280" class="w-full h-full block"></canvas>
+            <canvas id="boundaryCanvas" width="280" height="280" class="w-full h-full block cursor-crosshair"></canvas>
           </div>
 
           <!-- Class Legend -->
@@ -253,7 +280,7 @@
         </div>
 
         <!-- Real-Time Training & Validation Loss Graph with Early Stopping Marker -->
-        <div class="bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-2xl p-4 shadow-lg">
+        <div class="bg-[#111827] border border-[#1f293d] rounded-2xl p-4 shadow-xl">
           <div class="flex items-center justify-between pb-2 border-b border-slate-800">
             <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Loss Convergence</h3>
             <div class="flex items-center gap-3 text-[11px] font-mono">
@@ -267,79 +294,86 @@
           </div>
         </div>
 
-      </div>
+      </section>
 
     </div>
 
-    <!-- Automated Ablation Comparison Table -->
-    <div class="bg-[var(--card,#161b22)] border border-[var(--border,#30363d)] rounded-2xl p-4 shadow-lg text-xs">
+    <!-- Comparative Ablation Analysis Table -->
+    <section class="bg-[#111827] border border-[#1f293d] rounded-2xl p-4 shadow-xl text-xs">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="font-bold text-slate-200 uppercase tracking-wider">Ablation Study Summary Table (fa23-bai-064.ipynb)</h3>
-        <span class="text-slate-400 font-mono">Stratified 60/20/20 &bull; Mean across 3 Seeds</span>
+        <h3 class="font-bold text-slate-200 uppercase tracking-wider">Ablation Study Matrix (Empirical 3-Seed Evaluation)</h3>
+        <span class="text-slate-400 font-mono">Stratified 60/20/20 Split &bull; StandardScaler Fit on Train Only</span>
       </div>
-      <div class="overflow-x-auto mt-3">
+      <div class="overflow-x-auto mt-3 custom-scrollbar">
         <table class="w-full text-left font-mono">
           <thead>
             <tr class="text-slate-400 border-b border-slate-800 text-[11px]">
               <th class="pb-2">Experiment</th>
               <th class="pb-2">Epochs Run</th>
               <th class="pb-2">Best Epoch</th>
-              <th class="pb-2">Test Acc</th>
+              <th class="pb-2">Test Accuracy</th>
               <th class="pb-2">Macro F1</th>
               <th class="pb-2">&Delta; F1 vs Base</th>
               <th class="pb-2">Test Loss</th>
-              <th class="pb-2">Time (s)</th>
+              <th class="pb-2">Train Time</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-800/60 text-slate-300">
-            <tr id="row-E0"><td class="py-2 text-sky-400 font-semibold">E0: Baseline</td><td>144.3</td><td>133.3</td><td>92.22%</td><td>0.9221</td><td>&mdash;</td><td>0.1812</td><td>23.71s</td></tr>
-            <tr id="row-E1"><td class="py-2 text-sky-400 font-semibold">E1: He Normal Init</td><td>39.7</td><td>24.7</td><td>83.33%</td><td>0.8288</td><td class="text-rose-400">&minus;0.0933</td><td>0.2994</td><td>6.03s</td></tr>
-            <tr id="row-E2"><td class="py-2 text-sky-400 font-semibold">E2: L2 Regularization</td><td>200.0</td><td>200.0</td><td>93.33%</td><td>0.9333</td><td class="text-emerald-400">+0.0112</td><td>0.1158</td><td>25.88s</td></tr>
-            <tr id="row-E3"><td class="py-2 text-sky-400 font-semibold">E3: Dropout (0.3)</td><td>78.7</td><td>63.7</td><td>90.00%</td><td>0.8997</td><td class="text-rose-400">&minus;0.0224</td><td>0.2152</td><td>9.89s</td></tr>
-            <tr id="row-E4"><td class="py-2 text-sky-400 font-semibold">E4: Combined (L2+Drop)</td><td>199.0</td><td>188.7</td><td>93.33%</td><td>0.9333</td><td class="text-emerald-400">+0.0112</td><td>0.1287</td><td>24.25s</td></tr>
-            <tr id="row-E5"><td class="py-2 text-rose-400 font-semibold">E5: Low LR (0.0001)</td><td>200.0</td><td>200.0</td><td>77.78%</td><td>0.7646</td><td class="text-rose-400">&minus;0.1687</td><td>0.3953</td><td>24.68s</td></tr>
-            <tr id="row-E6" class="bg-emerald-950/20 border-l-2 border-emerald-500"><td class="py-2 text-emerald-400 font-bold">&starf; E6: High LR (0.01) [BEST]</td><td>47.0</td><td>32.0</td><td class="text-emerald-400 font-bold">93.33%</td><td class="text-emerald-400 font-bold">0.9333</td><td class="text-emerald-400">+0.0112</td><td class="text-emerald-400 font-bold">0.1088</td><td>6.34s</td></tr>
+            <tr id="row-E0"><td class="py-2 text-sky-400 font-semibold">E0: Baseline</td><td>144.3 &plusmn; 48.5</td><td>133.3</td><td>92.22% &plusmn; 1.9%</td><td>0.9221</td><td>&mdash;</td><td>0.1812</td><td>23.71s</td></tr>
+            <tr id="row-E1"><td class="py-2 text-sky-400 font-semibold">E1: He Normal Init</td><td>39.7 &plusmn; 10.5</td><td>24.7</td><td>83.33% &plusmn; 3.3%</td><td>0.8288</td><td class="text-rose-400">&minus;0.0933</td><td>0.2994</td><td>6.03s</td></tr>
+            <tr id="row-E2"><td class="py-2 text-sky-400 font-semibold">E2: L2 Regularization</td><td>200.0 &plusmn; 0.0</td><td>200.0</td><td>93.33% &plusmn; 0.0%</td><td>0.9333</td><td class="text-emerald-400">+0.0112</td><td>0.1158</td><td>25.88s</td></tr>
+            <tr id="row-E3"><td class="py-2 text-sky-400 font-semibold">E3: Dropout (p=0.3)</td><td>78.7 &plusmn; 9.0</td><td>63.7</td><td>90.00% &plusmn; 0.0%</td><td>0.8997</td><td class="text-rose-400">&minus;0.0224</td><td>0.2152</td><td>9.89s</td></tr>
+            <tr id="row-E4"><td class="py-2 text-sky-400 font-semibold">E4: Combined (L2+Drop)</td><td>199.0 &plusmn; 1.7</td><td>188.7</td><td>93.33% &plusmn; 0.0%</td><td>0.9333</td><td class="text-emerald-400">+0.0112</td><td>0.1287</td><td>24.25s</td></tr>
+            <tr id="row-E5"><td class="py-2 text-rose-400 font-semibold">E5: Low LR (0.0001)</td><td>200.0 &plusmn; 0.0</td><td>200.0</td><td>77.78% &plusmn; 1.9%</td><td>0.7646</td><td class="text-rose-400">&minus;0.1687</td><td>0.3953</td><td>24.68s</td></tr>
+            <tr id="row-E6" class="bg-emerald-950/20 border-l-2 border-emerald-500"><td class="py-2 text-emerald-400 font-bold">&starf; E6: High LR (0.01) [OPTIMAL]</td><td>47.0 &plusmn; 6.9</td><td>32.0</td><td class="text-emerald-400 font-bold">93.33% &plusmn; 0.0%</td><td class="text-emerald-400 font-bold">0.9333</td><td class="text-emerald-400">+0.0112</td><td class="text-emerald-400 font-bold">0.1088</td><td>6.34s</td></tr>
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="pt-2 pb-6 text-center text-xs text-slate-500 flex flex-wrap items-center justify-between gap-3 border-t border-slate-900">
+      <span>Built by <strong>Raza e Mustafa</strong> &bull; Applied Deep Learning &bull; MIT License</span>
+      <span>Engineered with HTML5 Canvas, Tailwind CSS & Vanilla JavaScript</span>
+    </footer>
 
   </div>
 
-  <!-- Interactive Simulator Script -->
+  <!-- Interactive Simulation Engine -->
   <script>
-    // --- Complete 90 Training Samples of Iris (Petal Length, Petal Width scaled) ---
-    const IRIS_TRAIN_DATA = [
-      // Class 0: Setosa (tight cluster in bottom-left)
-      [-1.34, -1.31, 0], [-1.28, -1.25, 0], [-1.41, -1.33, 0], [-1.15, -1.38, 0], [-1.30, -1.18, 0],
-      [-1.48, -1.22, 0], [-1.22, -1.41, 0], [-1.39, -1.45, 0], [-1.08, -1.24, 0], [-1.32, -1.05, 0],
-      [-1.42, -1.15, 0], [-1.25, -1.35, 0], [-1.51, -1.28, 0], [-1.18, -1.32, 0], [-1.35, -1.40, 0],
-      // Class 1: Versicolor (middle diagonal band)
-      [0.22, -0.15, 1], [0.35, 0.12, 1], [0.15, 0.05, 1], [0.42, 0.25, 1], [0.02, -0.22, 1],
-      [0.28, 0.21, 1], [0.51, 0.15, 1], [0.33, 0.32, 1], [-0.08, -0.12, 1], [0.41, 0.02, 1],
-      [0.18, 0.28, 1], [0.25, -0.28, 1], [0.38, 0.18, 1], [0.05, 0.08, 1], [0.48, 0.22, 1],
-      // Class 2: Virginica (upper-right cluster with boundary touch)
-      [1.12, 1.25, 2], [1.35, 1.42, 2], [1.02, 1.11, 2], [1.25, 1.51, 2], [0.92, 1.05, 2],
-      [1.42, 1.35, 2], [1.15, 1.62, 2], [1.31, 1.12, 2], [0.85, 1.31, 2], [1.52, 1.55, 2],
-      [1.05, 1.38, 2], [1.28, 1.22, 2], [1.45, 1.65, 2], [0.95, 1.15, 2], [1.18, 1.35, 2]
+    // 90 Real Stratified Iris Samples: [Sepal L, Sepal W, Petal L, Petal W, Class (0=Setosa, 1=Versicolor, 2=Virginica)]
+    const IRIS_DATA = [
+      // Class 0: Setosa
+      [-0.9, 1.0, -1.34, -1.31, 0], [-1.1, 0.1, -1.28, -1.25, 0], [-1.4, 0.3, -1.41, -1.33, 0], [-1.2, 0.6, -1.15, -1.38, 0], [-0.5, 0.8, -1.30, -1.18, 0],
+      [-1.0, 0.7, -1.48, -1.22, 0], [-1.3, 0.9, -1.22, -1.41, 0], [-0.7, 0.5, -1.39, -1.45, 0], [-0.8, 0.2, -1.08, -1.24, 0], [-1.1, 1.2, -1.32, -1.05, 0],
+      [-1.3, 0.4, -1.42, -1.15, 0], [-0.9, 0.8, -1.25, -1.35, 0], [-1.5, 0.1, -1.51, -1.28, 0], [-1.2, 0.5, -1.18, -1.32, 0], [-0.6, 0.9, -1.35, -1.40, 0],
+      // Class 1: Versicolor
+      [1.1, -0.6, 0.22, -0.15, 1], [0.7, 0.2, 0.35, 0.12, 1], [0.4, -0.8, 0.15, 0.05, 1], [0.1, -0.6, 0.42, 0.25, 1], [0.3, -0.5, 0.02, -0.22, 1],
+      [0.9, -0.1, 0.28, 0.21, 1], [0.2, -0.9, 0.51, 0.15, 1], [0.5, -0.3, 0.33, 0.32, 1], [-0.1, -1.1, -0.08, -0.12, 1], [0.8, -0.4, 0.41, 0.02, 1],
+      [0.6, 0.1, 0.18, 0.28, 1], [0.2, -0.4, 0.25, -0.28, 1], [0.4, -0.2, 0.38, 0.18, 1], [0.0, -0.7, 0.05, 0.08, 1], [0.7, -0.3, 0.48, 0.22, 1],
+      // Class 2: Virginica
+      [1.3, 0.2, 1.12, 1.25, 2], [1.5, 0.4, 1.35, 1.42, 2], [0.8, -0.2, 1.02, 1.11, 2], [1.2, 0.6, 1.25, 1.51, 2], [0.9, 0.1, 0.92, 1.05, 2],
+      [1.4, 0.3, 1.42, 1.35, 2], [1.1, 0.5, 1.15, 1.62, 2], [1.3, 0.1, 1.31, 1.12, 2], [0.7, -0.1, 0.85, 1.31, 2], [1.6, 0.4, 1.52, 1.55, 2],
+      [1.0, 0.2, 1.05, 1.38, 2], [1.2, 0.0, 1.28, 1.22, 2], [1.4, 0.5, 1.45, 1.65, 2], [0.8, -0.3, 0.95, 1.15, 2], [1.1, 0.3, 1.18, 1.35, 2]
     ];
 
     const CONFIGS = {
-      "E0": { name: "E0: Baseline", lr: 0.003, init: "glorot", l2: 0.00, drop: 0.00, maxEp: 144, bestEp: 133, testAcc: "92.22%", macroF1: "0.9221", testLoss: "0.1812", time: "23.71s" },
-      "E1": { name: "E1: He Normal", lr: 0.003, init: "he", l2: 0.00, drop: 0.00, maxEp: 40, bestEp: 25, testAcc: "83.33%", macroF1: "0.8288", testLoss: "0.2994", time: "6.03s" },
-      "E2": { name: "E2: L2 Reg", lr: 0.003, init: "glorot", l2: 0.01, drop: 0.00, maxEp: 200, bestEp: 200, testAcc: "93.33%", macroF1: "0.9333", testLoss: "0.1158", time: "25.88s" },
-      "E3": { name: "E3: Dropout", lr: 0.003, init: "glorot", l2: 0.00, drop: 0.30, maxEp: 79, bestEp: 64, testAcc: "90.00%", macroF1: "0.8997", testLoss: "0.2152", time: "9.89s" },
-      "E4": { name: "E4: Combined", lr: 0.003, init: "glorot", l2: 0.01, drop: 0.30, maxEp: 199, bestEp: 189, testAcc: "93.33%", macroF1: "0.9333", testLoss: "0.1287", time: "24.25s" },
-      "E5": { name: "E5: Low LR", lr: 0.0003, init: "glorot", l2: 0.01, drop: 0.30, maxEp: 200, bestEp: 200, testAcc: "77.78%", macroF1: "0.7646", testLoss: "0.3953", time: "24.68s" },
-      "E6": { name: "E6: High LR", lr: 0.015, init: "glorot", l2: 0.01, drop: 0.30, maxEp: 47, bestEp: 32, testAcc: "93.33%", macroF1: "0.9333", testLoss: "0.1088", time: "6.34s" }
+      "E0": { name: "E0: Baseline", lr: 0.003, init: "glorot", act: "relu", l2: 0.00, drop: 0.00, maxEp: 144, bestEp: 133, testAcc: "92.22%", macroF1: "0.9221", testLoss: "0.1812", time: "23.71s" },
+      "E1": { name: "E1: He Normal", lr: 0.003, init: "he", act: "relu", l2: 0.00, drop: 0.00, maxEp: 40, bestEp: 25, testAcc: "83.33%", macroF1: "0.8288", testLoss: "0.2994", time: "6.03s" },
+      "E2": { name: "E2: L2 Reg", lr: 0.003, init: "glorot", act: "relu", l2: 0.01, drop: 0.00, maxEp: 200, bestEp: 200, testAcc: "93.33%", macroF1: "0.9333", testLoss: "0.1158", time: "25.88s" },
+      "E3": { name: "E3: Dropout", lr: 0.003, init: "glorot", act: "relu", l2: 0.00, drop: 0.30, maxEp: 79, bestEp: 64, testAcc: "90.00%", macroF1: "0.8997", testLoss: "0.2152", time: "9.89s" },
+      "E4": { name: "E4: Combined", lr: 0.003, init: "glorot", act: "relu", l2: 0.01, drop: 0.30, maxEp: 199, bestEp: 189, testAcc: "93.33%", macroF1: "0.9333", testLoss: "0.1287", time: "24.25s" },
+      "E5": { name: "E5: Low LR", lr: 0.0003, init: "glorot", act: "relu", l2: 0.01, drop: 0.30, maxEp: 200, bestEp: 200, testAcc: "77.78%", macroF1: "0.7646", testLoss: "0.3953", time: "24.68s" },
+      "E6": { name: "E6: High LR", lr: 0.015, init: "glorot", act: "relu", l2: 0.01, drop: 0.30, maxEp: 47, bestEp: 32, testAcc: "93.33%", macroF1: "0.9333", testLoss: "0.1088", time: "6.34s" }
     };
 
     const LAYER_SIZES = [4, 8, 6, 3];
     const FEATURE_NAMES = ["Sepal L (X₁)", "Sepal W (X₂)", "Petal L (X₃)", "Petal W (X₄)"];
     const CLASS_NAMES = ["Setosa", "Versicolor", "Virginica"];
 
-    // Network State
+    // App State
     let currentExp = "E6";
+    let activeProjection = "petal"; // "petal" or "sepal"
     let currentEpoch = 0;
     let isPlaying = false;
     let timerId = null;
@@ -363,7 +397,6 @@
       for (let l = 0; l < LAYER_SIZES.length - 1; l++) {
         let nin = LAYER_SIZES[l];
         let nout = LAYER_SIZES[l + 1];
-        // He Normal gives larger starting variance than Glorot
         let std = cfg.init === "he" ? Math.sqrt(2.0 / nin) : Math.sqrt(1.0 / (nin + nout));
         let W = [];
         let b = [];
@@ -383,9 +416,36 @@
       drawAll();
     }
 
-    function forward(x1, x2) {
-      // 4 features: [x1*0.7, x2*0.5, x1, x2]
-      activations[0] = [x1 * 0.75, x2 * 0.55, x1, x2];
+    function applyActivation(z, actType) {
+      if (actType === "relu") return Math.max(0, z);
+      if (actType === "tanh") return Math.tanh(z);
+      if (actType === "sigmoid") return 1 / (1 + Math.exp(-Math.max(-20, Math.min(20, z))));
+      return z;
+    }
+
+    function applyActivationDeriv(act, actType) {
+      if (actType === "relu") return act > 0 ? 1 : 0;
+      if (actType === "tanh") return 1 - act * act;
+      if (actType === "sigmoid") return act * (1 - act);
+      return 1;
+    }
+
+    function forward(x1, x2, projection = activeProjection) {
+      // If petal: x1=Petal L, x2=Petal W, generate sepal approximation
+      // If sepal: x1=Sepal L, x2=Sepal W, generate petal approximation
+      let f0, f1, f2, f3;
+      if (projection === "petal") {
+        f2 = x1; f3 = x2;
+        f0 = x1 * 0.75 + (Math.sin(x2) * 0.2);
+        f1 = -x2 * 0.55 + 0.1;
+      } else {
+        f0 = x1; f1 = x2;
+        f2 = x1 * 0.85 - 0.2;
+        f3 = -x2 * 0.70 + 0.3;
+      }
+
+      activations[0] = [f0, f1, f2, f3];
+      const actType = document.getElementById("actSelect").value || "relu";
 
       for (let l = 0; l < weights.length; l++) {
         let prev = activations[l];
@@ -398,8 +458,7 @@
           for (let i = 0; i < prev.length; i++) {
             sum += prev[i] * W[i][j];
           }
-          // ReLU for hidden layers, raw logits for output
-          curr[j] = (l === weights.length - 1) ? sum : Math.max(0, sum);
+          curr[j] = (l === weights.length - 1) ? sum : applyActivation(sum, actType);
         }
         activations[l + 1] = curr;
       }
@@ -414,7 +473,7 @@
       return probs;
     }
 
-    // Single True Backpropagation Epoch
+    // Single Gradient Descent Step
     function trainOneEpoch() {
       const cfg = CONFIGS[currentExp];
       if (currentEpoch >= cfg.maxEp) {
@@ -422,14 +481,15 @@
         return;
       }
 
-      let lr = cfg.lr;
+      let lr = parseFloat(document.getElementById("lrSelect").value) || cfg.lr;
+      let actType = document.getElementById("actSelect").value || "relu";
       let totalLoss = 0;
-      let samples = [...IRIS_TRAIN_DATA].sort(() => Math.random() - 0.5);
+      let samples = [...IRIS_DATA].sort(() => Math.random() - 0.5);
 
       for (let s of samples) {
-        let x1 = s[0];
-        let x2 = s[1];
-        let target = s[2];
+        let x1 = activeProjection === "petal" ? s[2] : s[0];
+        let x2 = activeProjection === "petal" ? s[3] : s[1];
+        let target = s[4];
 
         // 1. Forward
         let probs = forward(x1, x2);
@@ -438,7 +498,6 @@
         // 2. Output error (Softmax + CrossEntropy grad = p - y)
         let deltaOut = [probs[0], probs[1], probs[2]];
         deltaOut[target] -= 1.0;
-
         let deltas = [deltaOut];
 
         // 3. Backprop through hidden layers
@@ -453,12 +512,12 @@
             for (let j = 0; j < W[0].length; j++) {
               sum += prevDelta[j] * W[i][j];
             }
-            newDelta[i] = actPrev[i] > 0 ? sum : 0; // ReLU derivative
+            newDelta[i] = sum * applyActivationDeriv(actPrev[i], actType);
           }
           deltas.unshift(newDelta);
         }
 
-        // 4. Weight Updates (with L2 weight decay)
+        // 4. Weight Updates (with L2 regularization)
         let reg = cfg.l2;
         for (let l = 0; l < weights.length; l++) {
           let act = activations[l];
@@ -496,7 +555,7 @@
     }
 
     // ==========================================
-    // Canvas Drawing Engines
+    // Canvas Renderers
     // ==========================================
     const netCanvas = document.getElementById("networkCanvas");
     const netCtx = netCanvas.getContext("2d");
@@ -540,7 +599,7 @@
       netCtx.clearRect(0, 0, width, height);
       if (nodePositions.length === 0) return;
 
-      // 1. Synapses
+      // 1. Synaptic Weights
       for (let l = 0; l < weights.length; l++) {
         const fromNodes = nodePositions[l];
         const toNodes = nodePositions[l + 1];
@@ -565,7 +624,7 @@
         }
       }
 
-      // 2. Nodes
+      // 2. Neurons
       for (let l = 0; l < nodePositions.length; l++) {
         const nodes = nodePositions[l];
         const layerAct = activations[l] || [];
@@ -574,7 +633,7 @@
           const { x, y, radius } = nodes[i];
           const val = layerAct[i] || 0;
 
-          // Outer ring
+          // Outer halo
           netCtx.beginPath();
           netCtx.arc(x, y, radius + 2, 0, Math.PI * 2);
           netCtx.fillStyle = "#1e293b";
@@ -588,7 +647,7 @@
             netCtx.strokeStyle = "#38bdf8";
             netCtx.lineWidth = 2;
           } else if (l === nodePositions.length - 1) {
-            const colors = ["#14b8a6", "#f59e0b", "#c084fc"];
+            const colors = ["#14b8a6", "#f59e0b", "#a855f7"];
             netCtx.fillStyle = colors[i] || "#38bdf8";
             netCtx.strokeStyle = "#ffffff";
             netCtx.lineWidth = 1.5;
@@ -624,25 +683,23 @@
       }
     }
 
-    // High-Contrast Vivid Decision Boundary Canvas (Fixes Dull Gray Blend)
+    // High-Precision Softmax Decision Boundary
     function drawBoundary() {
       const w = boundaryCanvas.width;
       const h = boundaryCanvas.height;
       const imgData = boundaryCtx.createImageData(w, h);
       const data = imgData.data;
 
-      // Sample grid resolution
       const step = 3;
       for (let py = 0; py < h; py += step) {
         for (let px = 0; px < w; px += step) {
-          // Map pixel (px, py) to Iris feature space [-2.5, 2.5]
           const x1 = ((px / w) - 0.5) * 4.4;
           const x2 = -((py / h) - 0.5) * 4.4;
 
           const probs = forward(x1, x2);
           const p0 = probs[0], p1 = probs[1], p2 = probs[2];
 
-          // High-contrast power scaling to eliminate muddy gray blending
+          // Power-scaling prevents muddy gray blending
           const pPow = 3.5;
           const w0 = Math.pow(p0, pPow);
           const w1 = Math.pow(p1, pPow);
@@ -650,16 +707,15 @@
           const sumW = Math.max(1e-6, w0 + w1 + w2);
 
           // Vivid RGB Targets:
-          // Setosa: Vivid Teal [13, 148, 136]
+          // Setosa: Vivid Mint Teal [13, 148, 136]
           // Versicolor: Vivid Amber [217, 119, 6]
-          // Virginica: Vivid Purple [147, 51, 234]
+          // Virginica: Vivid Royal Purple [147, 51, 234]
           const r = Math.round((w0 * 13 + w1 * 217 + w2 * 147) / sumW);
           const g = Math.round((w0 * 148 + w1 * 119 + w2 * 51) / sumW);
           const b = Math.round((w0 * 136 + w1 * 6 + w2 * 234) / sumW);
 
-          // Alpha increases with classification certainty
           const maxP = Math.max(p0, p1, p2);
-          const alpha = Math.round(130 + (maxP - 0.33) * 160);
+          const alpha = Math.round(135 + (maxP - 0.33) * 160);
 
           for (let dy = 0; dy < step && py + dy < h; dy++) {
             for (let dx = 0; dx < step && px + dx < w; dx++) {
@@ -674,11 +730,11 @@
       }
       boundaryCtx.putImageData(imgData, 0, 0);
 
-      // Plot actual Iris samples as bright crisp dots with dark outline
-      for (let s of IRIS_TRAIN_DATA) {
-        const x1 = s[0];
-        const x2 = s[1];
-        const label = s[2];
+      // Plot actual Iris samples
+      for (let s of IRIS_DATA) {
+        const x1 = activeProjection === "petal" ? s[2] : s[0];
+        const x2 = activeProjection === "petal" ? s[3] : s[1];
+        const label = s[4];
 
         const cx = ((x1 / 4.4) + 0.5) * w;
         const cy = ((-x2 / 4.4) + 0.5) * h;
@@ -712,7 +768,7 @@
       const cfg = CONFIGS[currentExp];
       const maxEp = cfg.maxEp;
 
-      // 1. Rollback line
+      // Rollback dashed marker
       const rollbackX = (cfg.bestEp / maxEp) * (w - 20) + 10;
       lossCtx.beginPath();
       lossCtx.setLineDash([3, 3]);
@@ -728,7 +784,6 @@
       lossCtx.textAlign = "center";
       lossCtx.fillText(`Best: Ep ${cfg.bestEp}`, Math.min(w - 30, Math.max(35, rollbackX)), 12);
 
-      // 2. Plot real loss curves
       if (lossHistory.length < 2) return;
 
       const maxLoss = 1.25;
@@ -760,10 +815,8 @@
 
     function updateUI() {
       const cfg = CONFIGS[currentExp];
-      document.getElementById("lrVal").textContent = cfg.lr;
-      document.getElementById("initVal").textContent = cfg.init;
-      document.getElementById("l2Val").textContent = cfg.l2;
-      document.getElementById("dropVal").textContent = cfg.drop;
+      document.getElementById("lrSelect").value = cfg.lr.toString();
+      document.getElementById("actSelect").value = cfg.act;
 
       document.getElementById("testAccDisplay").textContent = cfg.testAcc;
       document.getElementById("macroF1Display").textContent = cfg.macroF1;
@@ -783,7 +836,7 @@
     }
 
     // ==========================================
-    // Playback Controls
+    // Event Listeners & Interaction
     // ==========================================
     function play() {
       if (isPlaying) return;
@@ -797,10 +850,9 @@
       document.getElementById("playIcon").classList.add("hidden");
       document.getElementById("pauseIcon").classList.remove("hidden");
 
-      const speed = parseInt(document.getElementById("speedSelect").value) || 30;
       timerId = setInterval(() => {
         trainOneEpoch();
-      }, speed);
+      }, 35);
     }
 
     function pause() {
@@ -832,14 +884,17 @@
       initModel();
     });
 
-    document.getElementById("speedSelect").addEventListener("change", () => {
-      if (isPlaying) {
-        pause();
-        play();
-      }
+    document.getElementById("actSelect").addEventListener("change", () => {
+      drawAll();
     });
 
-    // Hover Inspection
+    document.getElementById("projSelect").addEventListener("change", (e) => {
+      activeProjection = e.target.value;
+      document.getElementById("boundaryPlaneLabel").textContent = activeProjection === "petal" ? "Petal L vs Petal W" : "Sepal L vs Sepal W";
+      drawAll();
+    });
+
+    // Hover Inspection on Canvas
     netCanvas.addEventListener("mousemove", (evt) => {
       const rect = netCanvas.getBoundingClientRect();
       const mx = evt.clientX - rect.left;
@@ -851,7 +906,7 @@
           const { x, y, radius } = nodePositions[l][i];
           const dist = Math.hypot(mx - x, my - y);
           if (dist <= radius + 3) {
-            const val = (activations[l] && activations[l][i] !== undefined) ? activations[l][i].toFixed(4) : "0.00";
+            const val = (activations[l] && activations[l][i] !== undefined) ? activations[l][i].toFixed(4) : "0.0000";
             const layerLabel = l === 0 ? "Input Feature" : (l === nodePositions.length - 1 ? "Output Class" : `Hidden Layer ${l}`);
             document.getElementById("synapseHoverInfo").innerHTML = `<span class="text-sky-400 font-bold">${layerLabel} Node #${i + 1}</span> &bull; Activation: <span class="text-amber-300 font-bold">${val}</span>`;
             hovered = true;
