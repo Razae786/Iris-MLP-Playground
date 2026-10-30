@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark" data-theme="aurora">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Iris Neural Playground • Interactive Multi-Layer Perceptron Laboratory</title>
   <meta name="description" content="Interactive browser-based visualization of Multi-Layer Perceptrons on the Iris dataset. Real-time backpropagation, animated synaptic graphs, dynamic decision boundary surfaces, and empirical ablation benchmarks.">
   <meta name="color-scheme" content="dark">
-  <meta name="theme-color" content="#07090e">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%2307090e' stroke='%2338bdf8' stroke-width='8'/><circle cx='50' cy='50' r='20' fill='%2314b8a6'/></svg>">
+  <meta name="theme-color" content="#040711">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23040711' stroke='%2310b981' stroke-width='8'/><circle cx='50' cy='50' r='20' fill='%2306b6d4'/></svg>">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,19 +17,12 @@
       theme: {
         extend: {
           colors: {
-            obsidian: {
-              950: '#07090e',
-              900: '#090d16',
-              850: '#0c1220',
-              800: '#111827',
-              700: '#1f293d',
-            },
-            accent: {
-              cyan: '#38bdf8',
-              teal: '#14b8a6',
-              amber: '#f59e0b',
-              purple: '#a855f7',
-              rose: '#f43f5e',
+            theme: {
+              bg: 'var(--color-bg)',
+              card: 'var(--color-card)',
+              border: 'var(--color-border)',
+              accent: 'var(--color-accent)',
+              accentGlow: 'var(--color-accent-glow)',
             }
           },
           fontFamily: {
@@ -42,14 +35,50 @@
   </script>
 
   <style>
-    :root {
-      color-scheme: dark;
+    /* Theme Definitions */
+    :root[data-theme="aurora"] {
+      --color-bg: #040711;
+      --color-card: #090e1c;
+      --color-border: #162035;
+      --color-accent: #10b981;
+      --color-accent-glow: rgba(16, 185, 129, 0.4);
+      --color-pos-synapse: #06b6d4;
+      --color-neg-synapse: #f43f5e;
+      --color-c0: #10b981;
+      --color-c1: #fbbf24;
+      --color-c2: #a855f7;
     }
+    :root[data-theme="tokyo"] {
+      --color-bg: #080915;
+      --color-card: #101226;
+      --color-border: #222648;
+      --color-accent: #f43f5e;
+      --color-accent-glow: rgba(244, 63, 94, 0.4);
+      --color-pos-synapse: #38bdf8;
+      --color-neg-synapse: #f43f5e;
+      --color-c0: #38bdf8;
+      --color-c1: #f43f5e;
+      --color-c2: #c084fc;
+    }
+    :root[data-theme="matrix"] {
+      --color-bg: #030804;
+      --color-card: #07120a;
+      --color-border: #102917;
+      --color-accent: #22c55e;
+      --color-accent-glow: rgba(34, 197, 94, 0.4);
+      --color-pos-synapse: #22c55e;
+      --color-neg-synapse: #eab308;
+      --color-c0: #22c55e;
+      --color-c1: #eab308;
+      --color-c2: #38bdf8;
+    }
+
     body {
-      background-color: #07090e;
+      background-color: var(--color-bg);
       color: #f8fafc;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       overflow-x: hidden;
+      transition: background-color 0.3s ease;
     }
 
     /* Custom Scrollbar */
@@ -58,14 +87,14 @@
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #090d16;
+      background: #040711;
     }
     ::-webkit-scrollbar-thumb {
-      background: #1f293d;
+      background: #1e293b;
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #38bdf8;
+      background: var(--color-accent);
     }
 
     /* Segmented Controls */
@@ -73,38 +102,45 @@
       transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .segmented-btn.active {
-      background-color: #38bdf8;
-      color: #07090e;
+      background-color: var(--color-accent);
+      color: #040711;
       font-weight: 700;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+      box-shadow: 0 0 14px var(--color-accent-glow);
     }
 
-    /* Glow utility */
-    .glow-cyan {
-      box-shadow: 0 0 20px -3px rgba(56, 189, 248, 0.35);
+    /* Glowing Primary CTA */
+    .btn-cta-train {
+      background: linear-gradient(135deg, var(--color-accent), #06b6d4);
+      color: #040711;
+      box-shadow: 0 4px 18px var(--color-accent-glow);
+      transition: all 0.2s ease;
     }
-    .glow-amber {
-      box-shadow: 0 0 20px -3px rgba(245, 158, 11, 0.35);
+    .btn-cta-train:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 6px 24px var(--color-accent-glow);
     }
     .btn-playing {
-      background-color: #f59e0b !important;
-      color: #07090e !important;
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.5) !important;
+      background: #f59e0b !important;
+      color: #040711 !important;
+      box-shadow: 0 0 22px rgba(245, 158, 11, 0.6) !important;
     }
 
-    /* Range slider custom styling */
-    input[type=range] {
-      accent-color: #38bdf8;
+    /* Card Glows */
+    .theme-card {
+      background-color: var(--color-card);
+      border: 1px solid var(--color-border);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
   </style>
 </head>
-<body class="min-h-screen bg-[#07090e] text-slate-100 antialiased selection:bg-sky-500 selection:text-slate-950">
+<body class="min-h-screen text-slate-100 antialiased selection:bg-emerald-500 selection:text-slate-950">
 
-  <!-- Subtle Radial Background Illumination -->
+  <!-- Dynamic Ambient Aurora Glows -->
   <div class="fixed inset-0 pointer-events-none opacity-40 z-0">
-    <div class="absolute -top-40 left-1/4 w-[600px] h-[600px] bg-sky-500/10 blur-[130px] rounded-full"></div>
-    <div class="absolute top-1/2 -right-40 w-[500px] h-[500px] bg-purple-500/10 blur-[130px] rounded-full"></div>
-    <div class="absolute -bottom-20 left-1/3 w-[500px] h-[500px] bg-teal-500/10 blur-[130px] rounded-full"></div>
+    <div class="absolute -top-40 left-1/4 w-[650px] h-[650px] bg-emerald-500/10 blur-[140px] rounded-full"></div>
+    <div class="absolute top-1/2 -right-40 w-[550px] h-[550px] bg-cyan-500/10 blur-[140px] rounded-full"></div>
+    <div class="absolute -bottom-20 left-1/3 w-[550px] h-[550px] bg-purple-500/10 blur-[140px] rounded-full"></div>
   </div>
 
   <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -113,48 +149,61 @@
     <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-800/80">
       <div class="space-y-1">
         <div class="flex items-center gap-3">
-          <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+            <svg class="w-5 h-5 text-slate-950 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h1 class="text-xl md:text-2xl font-black tracking-tight text-white">Iris Neural Playground</h1>
-              <span class="px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider bg-sky-950/80 text-sky-400 border border-sky-800/60 rounded-full">v2.0 Linear-Dark</span>
+              <h1 class="text-xl md:text-2xl font-black tracking-tight bg-gradient-to-r from-emerald-400 via-cyan-300 to-indigo-300 bg-clip-text text-transparent">Iris Neural Playground</h1>
+              <span class="px-2 py-0.5 text-[10px] font-mono font-semibold uppercase tracking-wider bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 rounded-full">Aurora Edition</span>
             </div>
             <p class="text-xs text-slate-400">Interactive Multi-Layer Perceptron Laboratory &bull; Real-Time In-Browser Backprop</p>
           </div>
         </div>
       </div>
 
-      <!-- Action Chips & Links -->
-      <div class="flex items-center gap-3 self-start md:self-auto">
+      <!-- Theme Switcher & Action Chips -->
+      <div class="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
+        <!-- Interactive Theme Selector -->
+        <div class="inline-flex p-1 bg-slate-950/90 rounded-xl border border-slate-800/80 text-xs font-mono">
+          <button type="button" class="theme-btn px-2.5 py-1 rounded-lg text-slate-300 hover:text-white transition active-theme bg-slate-800/80 font-bold" data-set-theme="aurora" title="Aurora Cyber Theme">
+            🌌 Aurora
+          </button>
+          <button type="button" class="theme-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-set-theme="tokyo" title="Tokyo Neon Theme">
+            ⚡ Tokyo
+          </button>
+          <button type="button" class="theme-btn px-2.5 py-1 rounded-lg text-slate-400 hover:text-white transition" data-set-theme="matrix" title="Matrix Emerald Theme">
+            🧪 Matrix
+          </button>
+        </div>
+
         <a href="https://github.com/Razae786/Iris-MLP-Playground" target="_blank" rel="noopener noreferrer" 
-           class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-xs font-medium text-slate-300 border border-slate-800 hover:border-slate-700 transition">
+           class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-xs font-medium text-slate-300 border border-slate-800 hover:border-slate-700 transition">
           <svg class="w-4 h-4 fill-current text-slate-400" viewBox="0 0 24 24">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
           </svg>
-          <span>GitHub Repo</span>
+          <span>GitHub</span>
         </a>
-        <a href="fa23-bai-064.ipynb" download class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-950/60 hover:bg-sky-900/60 text-xs font-mono text-sky-400 border border-sky-800/60 transition">
+        <a href="fa23-bai-064.ipynb" download class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-950/60 hover:bg-emerald-900/60 text-xs font-mono text-emerald-400 border border-emerald-800/60 transition">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
-          <span>fa23-bai-064.ipynb</span>
+          <span>Notebook</span>
         </a>
       </div>
     </header>
 
-    <!-- Interactive Tactical Control Bar (TensorFlow Playground Inspired) -->
-    <section class="bg-[#0e1422] p-4 sm:p-5 rounded-2xl border border-slate-800/90 shadow-xl shadow-black/30">
+    <!-- Interactive Tactical Control Bar -->
+    <section class="theme-card p-4 sm:p-5 rounded-2xl">
       <div class="flex flex-wrap items-center justify-between gap-4">
         
         <!-- Primary Transport Controls -->
         <div class="flex items-center gap-3">
           <!-- Play / Pause Button -->
           <button id="btnPlay" aria-label="Play or Pause Training"
-                  class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm tracking-wide transition shadow-lg shadow-sky-500/25 active:scale-95 focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:outline-none">
+                  class="btn-cta-train flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm tracking-wide active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none cursor-pointer">
             <svg id="playIcon" class="w-4 h-4 fill-current" viewBox="0 0 24 24">
               <path d="M8 5v14l11-7z"/>
             </svg>
@@ -166,8 +215,8 @@
 
           <!-- Step Forward Button -->
           <button id="btnStep" aria-label="Step forward 5 epochs" title="Advance by 5 epochs"
-                  class="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-xs font-semibold font-mono transition active:scale-95 focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:outline-none">
-            <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  class="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700/80 text-xs font-semibold font-mono transition active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none cursor-pointer">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
             </svg>
             <span>Step (+5)</span>
@@ -175,7 +224,7 @@
 
           <!-- Reset Button -->
           <button id="btnReset" aria-label="Reset Model Weights" title="Re-initialize weights"
-                  class="flex items-center gap-1 px-3 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 text-xs font-mono transition active:scale-95 focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:outline-none">
+                  class="flex items-center gap-1 px-3 py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 text-xs font-mono transition active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none cursor-pointer">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
             </svg>
@@ -184,10 +233,10 @@
         </div>
 
         <!-- Live Epoch Progress & Telemetry Pill -->
-        <div class="flex items-center gap-4 bg-slate-950/70 px-4 py-2 rounded-xl border border-slate-800/80 text-xs font-mono">
+        <div class="flex items-center gap-4 bg-slate-950/80 px-4 py-2 rounded-xl border border-slate-800/90 text-xs font-mono">
           <div>
             <span class="text-slate-500 uppercase tracking-wider text-[10px] block">Epoch</span>
-            <span class="text-sky-400 font-bold text-base"><span id="epochDisplay">0</span> <span class="text-slate-500 text-xs font-normal" id="maxEpochDisplay">/ 47</span></span>
+            <span class="text-emerald-400 font-bold text-base"><span id="epochDisplay">0</span> <span class="text-slate-500 text-xs font-normal" id="maxEpochDisplay">/ 47</span></span>
           </div>
           <div class="h-7 w-px bg-slate-800"></div>
           <div>
@@ -197,14 +246,14 @@
           <div class="h-7 w-px bg-slate-800"></div>
           <div>
             <span class="text-slate-500 uppercase tracking-wider text-[10px] block">Test Acc</span>
-            <span class="text-emerald-400 font-bold text-base" id="testAccDisplay">93.33%</span>
+            <span class="text-cyan-400 font-bold text-base" id="testAccDisplay">93.33%</span>
           </div>
         </div>
 
         <!-- Quick Experiment Selector Dropdown -->
         <div class="flex items-center gap-2">
           <label for="expSelect" class="text-xs text-slate-400 font-mono">Experiment:</label>
-          <select id="expSelect" class="bg-slate-900 border border-slate-700/80 text-slate-200 text-xs font-mono rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:outline-none">
+          <select id="expSelect" class="bg-slate-900 border border-slate-700/80 text-slate-200 text-xs font-mono rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
             <option value="E6" selected>★ E6: High LR (0.015, OPTIMAL)</option>
             <option value="E0">E0: Baseline (lr=0.003, Glorot)</option>
             <option value="E1">E1: He Normal (Overfitting Check)</option>
@@ -223,42 +272,42 @@
         <!-- Learning Rate Segmented Switch -->
         <div>
           <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider block mb-1.5">Learning Rate (&eta;)</span>
-          <div class="inline-flex p-1 bg-slate-950/80 rounded-lg border border-slate-800/80 w-full justify-between" role="group" aria-label="Learning Rate Switcher">
-            <button type="button" class="lr-btn segmented-btn px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-lr="0.0001">1e-4</button>
-            <button type="button" class="lr-btn segmented-btn px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-lr="0.001">1e-3</button>
-            <button type="button" class="lr-btn segmented-btn px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-lr="0.003">3e-3</button>
-            <button type="button" class="lr-btn segmented-btn active px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-lr="0.015">0.015</button>
-            <button type="button" class="lr-btn segmented-btn px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-lr="0.03">0.03</button>
+          <div class="inline-flex p-1 bg-slate-950/80 rounded-xl border border-slate-800/80 w-full justify-between" role="group" aria-label="Learning Rate Switcher">
+            <button type="button" class="lr-btn segmented-btn px-2.5 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-lr="0.0001">1e-4</button>
+            <button type="button" class="lr-btn segmented-btn px-2.5 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-lr="0.001">1e-3</button>
+            <button type="button" class="lr-btn segmented-btn px-2.5 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-lr="0.003">3e-3</button>
+            <button type="button" class="lr-btn segmented-btn active px-2.5 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-lr="0.015">0.015</button>
+            <button type="button" class="lr-btn segmented-btn px-2.5 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-lr="0.03">0.03</button>
           </div>
         </div>
 
         <!-- Activation Function Switch -->
         <div>
           <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider block mb-1.5">Activation Function</span>
-          <div class="inline-flex p-1 bg-slate-950/80 rounded-lg border border-slate-800/80 w-full justify-between" role="group" aria-label="Activation Switcher">
-            <button type="button" class="act-btn segmented-btn active px-3 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-act="relu">ReLU</button>
-            <button type="button" class="act-btn segmented-btn px-3 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-act="tanh">Tanh</button>
-            <button type="button" class="act-btn segmented-btn px-3 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-act="sigmoid">Sigmoid</button>
+          <div class="inline-flex p-1 bg-slate-950/80 rounded-xl border border-slate-800/80 w-full justify-between" role="group" aria-label="Activation Switcher">
+            <button type="button" class="act-btn segmented-btn active px-3 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-act="relu">ReLU</button>
+            <button type="button" class="act-btn segmented-btn px-3 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-act="tanh">Tanh</button>
+            <button type="button" class="act-btn segmented-btn px-3 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-act="sigmoid">Sigmoid</button>
           </div>
         </div>
 
         <!-- 2D Decision Plane Projection -->
         <div>
           <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider block mb-1.5">2D Decision Plane</span>
-          <div class="inline-flex p-1 bg-slate-950/80 rounded-lg border border-slate-800/80 w-full justify-between" role="group" aria-label="Projection Switcher">
-            <button type="button" class="proj-btn segmented-btn active px-3 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-proj="petal">Petal (L &times; W)</button>
-            <button type="button" class="proj-btn segmented-btn px-3 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-proj="sepal">Sepal (L &times; W)</button>
+          <div class="inline-flex p-1 bg-slate-950/80 rounded-xl border border-slate-800/80 w-full justify-between" role="group" aria-label="Projection Switcher">
+            <button type="button" class="proj-btn segmented-btn active px-3 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-proj="petal">Petal (L &times; W)</button>
+            <button type="button" class="proj-btn segmented-btn px-3 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-proj="sepal">Sepal (L &times; W)</button>
           </div>
         </div>
 
         <!-- Simulation Speed -->
         <div>
-          <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider block mb-1.5">Playback Speed</span>
-          <div class="inline-flex p-1 bg-slate-950/80 rounded-lg border border-slate-800/80 w-full justify-between" role="group" aria-label="Speed Switcher">
-            <button type="button" class="spd-btn segmented-btn px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-speed="70">1&times;</button>
-            <button type="button" class="spd-btn segmented-btn active px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-speed="25">2&times;</button>
-            <button type="button" class="spd-btn segmented-btn px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-speed="10">5&times;</button>
-            <button type="button" class="spd-btn segmented-btn px-2.5 py-1 rounded text-[11px] font-mono text-slate-400 hover:text-white" data-speed="1">Turbo</button>
+          <span class="text-[11px] font-mono text-slate-400 uppercase tracking-wider block mb-1.5">Simulation Speed</span>
+          <div class="inline-flex p-1 bg-slate-950/80 rounded-xl border border-slate-800/80 w-full justify-between" role="group" aria-label="Speed Switcher">
+            <button type="button" class="spd-btn segmented-btn px-2.5 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-speed="70">1&times;</button>
+            <button type="button" class="spd-btn segmented-btn active px-2.5 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-speed="25">2&times;</button>
+            <button type="button" class="spd-btn segmented-btn px-2.5 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-speed="10">5&times;</button>
+            <button type="button" class="spd-btn segmented-btn px-2.5 py-1 rounded-lg text-[11px] font-mono text-slate-400 hover:text-white" data-speed="1">Turbo</button>
           </div>
         </div>
 
@@ -269,29 +318,29 @@
     <main class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
       <!-- LEFT: Dynamic Neural Network Architecture Graph (7 Cols) -->
-      <section class="lg:col-span-7 bg-[#0e1422] p-5 rounded-2xl border border-slate-800/90 shadow-xl shadow-black/30 flex flex-col justify-between">
+      <section class="lg:col-span-7 theme-card p-5 rounded-2xl flex flex-col justify-between">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800/60">
           <div>
             <h2 class="text-sm font-bold tracking-tight text-white flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
               Neural Network Architecture
             </h2>
             <p class="text-xs text-slate-400 mt-0.5">Input Layer (4) &rarr; Dense (8, ReLU) &rarr; Dense (6, ReLU) &rarr; Softmax (3)</p>
           </div>
           <div class="flex items-center gap-4 text-xs font-mono">
             <span class="flex items-center gap-1.5 text-slate-400">
-              <span class="w-3.5 h-1 bg-sky-400 rounded"></span> + Weight
+              <span class="w-3.5 h-1 bg-cyan-400 rounded"></span> + Weight
             </span>
             <span class="flex items-center gap-1.5 text-slate-400">
-              <span class="w-3.5 h-1 bg-amber-400 rounded"></span> &minus; Weight
+              <span class="w-3.5 h-1 bg-rose-400 rounded"></span> &minus; Weight
             </span>
           </div>
         </div>
 
         <!-- Network Canvas Viewport -->
-        <div class="relative w-full h-[400px] my-3 rounded-xl bg-[#07090e] border border-slate-800/80 overflow-hidden flex items-center justify-center">
+        <div class="relative w-full h-[400px] my-3 rounded-xl bg-[#040711] border border-slate-800/90 overflow-hidden flex items-center justify-center">
           <canvas id="networkCanvas" class="w-full h-full block cursor-crosshair"></canvas>
-          <div id="synapseHoverInfo" class="absolute bottom-2 left-3 right-3 text-[11px] font-mono text-slate-400 bg-slate-900/90 px-3 py-1.5 rounded-lg border border-slate-800 backdrop-blur pointer-events-none truncate text-center">
+          <div id="synapseHoverInfo" class="absolute bottom-2 left-3 right-3 text-[11px] font-mono text-slate-400 bg-slate-900/95 px-3 py-1.5 rounded-lg border border-slate-800 backdrop-blur pointer-events-none truncate text-center">
             Hover over any neuron or synapse to inspect weight / activation value
           </div>
         </div>
@@ -309,24 +358,24 @@
       <div class="lg:col-span-5 space-y-6">
 
         <!-- Decision Boundary Surface Card -->
-        <section class="bg-[#0e1422] p-5 rounded-2xl border border-slate-800/90 shadow-xl shadow-black/30">
+        <section class="theme-card p-5 rounded-2xl">
           <div class="flex items-center justify-between pb-2 border-b border-slate-800/60">
             <div>
               <h2 class="text-sm font-bold tracking-tight text-white flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
                 Decision Boundary
               </h2>
               <span id="boundaryPlaneLabel" class="text-xs font-mono text-slate-400">Petal L vs Petal W (StandardScaled)</span>
             </div>
-            <span class="text-[11px] font-mono text-sky-400 bg-sky-950/60 border border-sky-800/60 px-2 py-0.5 rounded">60 FPS Fast</span>
+            <span class="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded">60 FPS Fast</span>
           </div>
 
           <!-- Canvas Surface with interactive probe HUD -->
-          <div class="relative w-full aspect-square mt-3 bg-[#07090e] rounded-xl overflow-hidden border border-slate-800 shadow-inner">
+          <div class="relative w-full aspect-square mt-3 bg-[#040711] rounded-xl overflow-hidden border border-slate-800 shadow-inner">
             <canvas id="boundaryCanvas" width="300" height="300" class="w-full h-full block cursor-crosshair"></canvas>
             
             <!-- Live Hover Probe HUD -->
-            <div id="boundaryHoverHUD" class="absolute top-2 left-2 right-2 text-[10px] font-mono text-slate-200 bg-slate-950/85 px-2.5 py-1.5 rounded border border-slate-800 backdrop-blur pointer-events-none hidden flex items-center justify-between">
+            <div id="boundaryHoverHUD" class="absolute top-2 left-2 right-2 text-[10px] font-mono text-slate-200 bg-slate-950/90 px-2.5 py-1.5 rounded border border-slate-800 backdrop-blur pointer-events-none hidden flex items-center justify-between">
               <span id="hudCoords">X₁: 0.00, X₂: 0.00</span>
               <span id="hudProbs" class="font-bold">Setosa: 0% | Versi: 0% | Virg: 0%</span>
             </div>
@@ -334,8 +383,8 @@
 
           <!-- Legend Bar -->
           <div class="flex items-center justify-around mt-3 text-xs font-mono">
-            <span class="flex items-center gap-1.5 text-teal-400">
-              <span class="w-2.5 h-2.5 rounded-full bg-teal-400 shadow-sm shadow-teal-400/50"></span> Setosa (0)
+            <span class="flex items-center gap-1.5 text-emerald-400">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50"></span> Setosa (0)
             </span>
             <span class="flex items-center gap-1.5 text-amber-400">
               <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50"></span> Versicolor (1)
@@ -347,11 +396,11 @@
         </section>
 
         <!-- Real-Time Convergence / Loss History Card -->
-        <section class="bg-[#0e1422] p-5 rounded-2xl border border-slate-800/90 shadow-xl shadow-black/30">
+        <section class="theme-card p-5 rounded-2xl">
           <div class="flex items-center justify-between pb-2 border-b border-slate-800/60">
             <div>
               <h2 class="text-sm font-bold tracking-tight text-white flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                 Loss Trajectory &amp; EarlyStopping
               </h2>
               <p class="text-xs text-slate-400">Cross-Entropy Loss vs Training Epochs</p>
@@ -367,7 +416,7 @@
           </div>
 
           <!-- Loss Graph Canvas -->
-          <div class="relative w-full h-[120px] mt-3 bg-[#07090e] rounded-xl overflow-hidden border border-slate-800">
+          <div class="relative w-full h-[120px] mt-3 bg-[#040711] rounded-xl overflow-hidden border border-slate-800">
             <canvas id="lossCanvas" width="400" height="120" class="w-full h-full block"></canvas>
           </div>
         </section>
@@ -377,37 +426,37 @@
 
     <!-- Key Empirical Performance Metrics (Notebook Benchmarks) -->
     <section class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-      <div class="bg-[#0e1422] p-3.5 rounded-xl border border-slate-800/80">
+      <div class="theme-card p-3.5 rounded-xl">
         <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Test Accuracy</span>
         <span class="text-xl font-black font-mono text-emerald-400" id="metricTestAcc">93.33%</span>
         <span class="text-[10px] text-slate-500 block">&plusmn; 0.0% Variance</span>
       </div>
 
-      <div class="bg-[#0e1422] p-3.5 rounded-xl border border-slate-800/80">
+      <div class="theme-card p-3.5 rounded-xl">
         <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Macro F1-Score</span>
-        <span class="text-xl font-black font-mono text-sky-400" id="metricMacroF1">0.9333</span>
+        <span class="text-xl font-black font-mono text-cyan-400" id="metricMacroF1">0.9333</span>
         <span class="text-[10px] text-slate-500 block">Harmonic Mean</span>
       </div>
 
-      <div class="bg-[#0e1422] p-3.5 rounded-xl border border-slate-800/80">
+      <div class="theme-card p-3.5 rounded-xl">
         <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Min Test Loss</span>
         <span class="text-xl font-black font-mono text-amber-400" id="metricTestLoss">0.1088</span>
         <span class="text-[10px] text-slate-500 block">Cross-Entropy</span>
       </div>
 
-      <div class="bg-[#0e1422] p-3.5 rounded-xl border border-slate-800/80">
+      <div class="theme-card p-3.5 rounded-xl">
         <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">EarlyStopping Rollback</span>
         <span class="text-xl font-black font-mono text-rose-400" id="metricBestEp">Epoch 32</span>
         <span class="text-[10px] text-slate-500 block">Optimal Weights</span>
       </div>
 
-      <div class="bg-[#0e1422] p-3.5 rounded-xl border border-slate-800/80">
+      <div class="theme-card p-3.5 rounded-xl">
         <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Epochs Run</span>
         <span class="text-xl font-black font-mono text-slate-200" id="metricMaxEp">Epoch 47</span>
         <span class="text-[10px] text-slate-500 block">Patience = 15</span>
       </div>
 
-      <div class="bg-[#0e1422] p-3.5 rounded-xl border border-slate-800/80">
+      <div class="theme-card p-3.5 rounded-xl">
         <span class="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Wall-Clock Time</span>
         <span class="text-xl font-black font-mono text-purple-400" id="metricTime">6.34s</span>
         <span class="text-[10px] text-slate-500 block">3.7&times; Faster Speed</span>
@@ -415,7 +464,7 @@
     </section>
 
     <!-- Comprehensive Empirical Ablation Study Matrix -->
-    <section class="bg-[#0e1422] p-5 sm:p-6 rounded-2xl border border-slate-800/90 shadow-xl shadow-black/30">
+    <section class="theme-card p-5 sm:p-6 rounded-2xl">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800/60 gap-2">
         <div>
           <h2 class="text-base font-bold tracking-tight text-white flex items-center gap-2">
@@ -424,7 +473,7 @@
           </h2>
           <p class="text-xs text-slate-400 mt-0.5">Click any row below to instantly load and simulate that experiment in the playground</p>
         </div>
-        <span class="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 self-start sm:self-auto">
+        <span class="text-xs font-mono text-slate-400 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-800 self-start sm:self-auto">
           7 Ablation Runs &bull; 90 Iris Stratified Samples
         </span>
       </div>
@@ -451,27 +500,27 @@
               <td class="px-3 text-emerald-300 font-sans font-semibold">Top test score, fastest convergence (3.7&times; speedup), lowest test loss</td>
             </tr>
             <tr id="row-E0" class="cursor-pointer hover:bg-slate-800/50 transition" onclick="selectExp('E0')">
-              <td class="py-2.5 px-3 text-sky-400 font-semibold">E0: Baseline (lr=0.003, Glorot)</td>
+              <td class="py-2.5 px-3 text-cyan-400 font-semibold">E0: Baseline (lr=0.003, Glorot)</td>
               <td class="px-2">144.3</td><td class="px-2">133.3</td><td class="px-2">92.22% &plusmn; 1.9%</td><td class="px-2">0.9221</td><td class="px-2 text-slate-400">&mdash;</td><td class="px-2">0.1812</td><td class="px-2">23.71s</td>
               <td class="px-3 text-slate-400 font-sans">Stable convergence, slight over-training past epoch 130</td>
             </tr>
             <tr id="row-E1" class="cursor-pointer hover:bg-slate-800/50 transition" onclick="selectExp('E1')">
-              <td class="py-2.5 px-3 text-sky-400 font-semibold">E1: He Normal Initialization</td>
+              <td class="py-2.5 px-3 text-cyan-400 font-semibold">E1: He Normal Initialization</td>
               <td class="px-2">39.7</td><td class="px-2">24.7</td><td class="px-2">83.33% &plusmn; 3.3%</td><td class="px-2">0.8288</td><td class="px-2 text-rose-400">&minus;0.0933</td><td class="px-2">0.2994</td><td class="px-2">6.03s</td>
               <td class="px-3 text-rose-300 font-sans">Premature convergence due to excessive variance on small data</td>
             </tr>
             <tr id="row-E2" class="cursor-pointer hover:bg-slate-800/50 transition" onclick="selectExp('E2')">
-              <td class="py-2.5 px-3 text-sky-400 font-semibold">E2: L2 Regularization (&lambda;=0.01)</td>
+              <td class="py-2.5 px-3 text-cyan-400 font-semibold">E2: L2 Regularization (&lambda;=0.01)</td>
               <td class="px-2">200.0</td><td class="px-2">200.0</td><td class="px-2">93.33% &plusmn; 0.0%</td><td class="px-2">0.9333</td><td class="px-2 text-emerald-400">+0.0112</td><td class="px-2">0.1158</td><td class="px-2">25.88s</td>
               <td class="px-3 text-slate-400 font-sans">Zero variance, prevents weight explosion, reaches 200 epochs</td>
             </tr>
             <tr id="row-E3" class="cursor-pointer hover:bg-slate-800/50 transition" onclick="selectExp('E3')">
-              <td class="py-2.5 px-3 text-sky-400 font-semibold">E3: Dropout (p=0.30)</td>
+              <td class="py-2.5 px-3 text-cyan-400 font-semibold">E3: Dropout (p=0.30)</td>
               <td class="px-2">78.7</td><td class="px-2">63.7</td><td class="px-2">90.00% &plusmn; 0.0%</td><td class="px-2">0.8997</td><td class="px-2 text-rose-400">&minus;0.0224</td><td class="px-2">0.2152</td><td class="px-2">9.89s</td>
               <td class="px-3 text-slate-400 font-sans">Underfitting: zeroing 30% of neurons causes capacity deficiency</td>
             </tr>
             <tr id="row-E4" class="cursor-pointer hover:bg-slate-800/50 transition" onclick="selectExp('E4')">
-              <td class="py-2.5 px-3 text-sky-400 font-semibold">E4: Combined (L2 + Dropout)</td>
+              <td class="py-2.5 px-3 text-cyan-400 font-semibold">E4: Combined (L2 + Dropout)</td>
               <td class="px-2">199.0</td><td class="px-2">188.7</td><td class="px-2">93.33% &plusmn; 0.0%</td><td class="px-2">0.9333</td><td class="px-2 text-emerald-400">+0.0112</td><td class="px-2">0.1287</td><td class="px-2">24.25s</td>
               <td class="px-3 text-slate-400 font-sans">L2 stabilizes network noise introduced by stochastic dropout</td>
             </tr>
@@ -488,7 +537,7 @@
     <!-- Footer -->
     <footer class="pt-4 pb-8 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-900">
       <span>Built with high-precision JavaScript &bull; <strong>Raza e Mustafa</strong> &bull; MIT License</span>
-      <span>Designed with Tailwind CSS, HTML5 Canvas, and modern-web-guidance</span>
+      <span>Engineered with Tailwind CSS, HTML5 Canvas, and modern-web-guidance</span>
     </footer>
 
   </div>
@@ -563,14 +612,12 @@
       for (let l = 0; l < LAYER_SIZES.length - 1; l++) {
         const nin = LAYER_SIZES[l];
         const nout = LAYER_SIZES[l + 1];
-        // He Normal for ReLU or Glorot for general
         const std = cfg.init === "he" ? Math.sqrt(2.0 / nin) : Math.sqrt(2.0 / (nin + nout));
         const W = [];
         const b = [];
         for (let i = 0; i < nin; i++) {
           W[i] = [];
           for (let j = 0; j < nout; j++) {
-            // Gaussian box-muller approximation
             const u = Math.max(1e-7, Math.random());
             const v = Math.random();
             const z0 = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
@@ -601,7 +648,6 @@
       return 1;
     }
 
-    // Pure feedforward pass returning probabilities without side effects
     function predictProbs(features, actType) {
       let current = features;
       for (let l = 0; l < weights.length; l++) {
@@ -617,14 +663,12 @@
         }
         current = next;
       }
-      // Softmax
       const maxL = Math.max(...current);
       const exps = current.map(v => Math.exp(Math.min(20, Math.max(-20, v - maxL))));
       const sumE = exps.reduce((a, b) => a + b, 0);
       return exps.map(v => v / sumE);
     }
 
-    // Feedforward that saves internal activations for backpropagation
     function forwardWithTrace(features, actType) {
       activations[0] = [...features];
       for (let l = 0; l < weights.length; l++) {
@@ -650,7 +694,6 @@
       return probs;
     }
 
-    // Train a single epoch with real backpropagation
     function trainOneEpoch() {
       const cfg = CONFIGS[currentExp];
       if (currentEpoch >= cfg.maxEp) {
@@ -667,16 +710,13 @@
         const features = [s[0], s[1], s[2], s[3]];
         const target = s[4];
 
-        // 1. Forward Trace
         const probs = forwardWithTrace(features, actType);
         totalLoss += -Math.log(Math.max(1e-7, probs[target]));
 
-        // 2. Output Error (Softmax + Cross Entropy gradient: probs - y)
         const deltaOut = [probs[0], probs[1], probs[2]];
         deltaOut[target] -= 1.0;
         const deltas = [deltaOut];
 
-        // 3. Backpropagate error deltas through hidden layers
         for (let l = weights.length - 1; l >= 1; l--) {
           const prevDelta = deltas[0];
           const W = weights[l];
@@ -693,7 +733,6 @@
           deltas.unshift(newDelta);
         }
 
-        // 4. Weight Updates (with L2 Regularization & Dropout attenuation)
         const reg = cfg.l2;
         for (let l = 0; l < weights.length; l++) {
           const act = activations[l];
@@ -715,13 +754,11 @@
 
       currentEpoch++;
       const avgLoss = totalLoss / samples.length;
-      // Realistic validation curve that converges and shows slight variance
       const valLoss = avgLoss * (1.02 + 0.05 * Math.sin(currentEpoch * 0.4) + Math.random() * 0.03);
 
       lossHistory.push(avgLoss);
       valLossHistory.push(valLoss);
 
-      // Update counters
       document.getElementById("epochDisplay").textContent = currentEpoch;
       document.getElementById("trainLossDisplay").textContent = avgLoss.toFixed(4);
 
@@ -732,7 +769,6 @@
       }
     }
 
-    // Step forward by N epochs (default 5 for fast visible feedback)
     function stepForward(epochs = 5) {
       const cfg = CONFIGS[currentExp];
       for (let k = 0; k < epochs; k++) {
@@ -741,9 +777,7 @@
       }
     }
 
-    // ==========================================
-    // Visualizer Canvas Engines
-    // ==========================================
+    // Canvas Engines
     const netCanvas = document.getElementById("networkCanvas");
     const netCtx = netCanvas.getContext("2d");
     const boundaryCanvas = document.getElementById("boundaryCanvas");
@@ -780,7 +814,6 @@
       }
     }
 
-    // Render Animated Synaptic Bezier Wiring & Glowing Neurons
     function drawNetwork() {
       const width = netCanvas.width / window.devicePixelRatio;
       const height = netCanvas.height / window.devicePixelRatio;
@@ -810,12 +843,11 @@
             netCtx.bezierCurveTo(cx1, cy1, cx2, cy2, p2.x, p2.y);
 
             const isPos = wVal >= 0;
-            const alpha = Math.min(0.9, Math.max(0.15, Math.abs(wVal) * 0.7));
-            netCtx.strokeStyle = isPos ? `rgba(56, 189, 248, ${alpha})` : `rgba(245, 158, 11, ${alpha})`;
-            netCtx.lineWidth = Math.min(3.5, Math.max(0.8, Math.abs(wVal) * 2.0));
+            const alpha = Math.min(0.9, Math.max(0.16, Math.abs(wVal) * 0.75));
+            netCtx.strokeStyle = isPos ? `rgba(6, 182, 212, ${alpha})` : `rgba(244, 63, 94, ${alpha})`;
+            netCtx.lineWidth = Math.min(3.5, Math.max(0.8, Math.abs(wVal) * 2.1));
             netCtx.stroke();
 
-            // Animated Signal Pulse along synapse if active
             if (isPlaying && Math.abs(wVal) > 0.4) {
               const t = (pulseAnimOffset + (i + j) * 0.1) % 1.0;
               const it = 1 - t;
@@ -824,7 +856,7 @@
 
               netCtx.beginPath();
               netCtx.arc(px, py, 1.8, 0, Math.PI * 2);
-              netCtx.fillStyle = isPos ? "#38bdf8" : "#f59e0b";
+              netCtx.fillStyle = isPos ? "#06b6d4" : "#f43f5e";
               netCtx.fill();
             }
           }
@@ -840,34 +872,31 @@
           const { x, y, radius } = nodes[i];
           const val = layerAct[i] || 0;
 
-          // Outer halo
           netCtx.beginPath();
           netCtx.arc(x, y, radius + 2.5, 0, Math.PI * 2);
-          netCtx.fillStyle = "#1e293b";
+          netCtx.fillStyle = "#162035";
           netCtx.fill();
 
-          // Body
           netCtx.beginPath();
           netCtx.arc(x, y, radius, 0, Math.PI * 2);
           if (l === 0) {
-            netCtx.fillStyle = "#0c1220";
-            netCtx.strokeStyle = "#38bdf8";
+            netCtx.fillStyle = "#090e1c";
+            netCtx.strokeStyle = "#10b981";
             netCtx.lineWidth = 2;
           } else if (l === nodePositions.length - 1) {
-            const colors = ["#14b8a6", "#f59e0b", "#a855f7"];
-            netCtx.fillStyle = colors[i] || "#38bdf8";
+            const colors = ["#10b981", "#fbbf24", "#a855f7"];
+            netCtx.fillStyle = colors[i] || "#10b981";
             netCtx.strokeStyle = "#ffffff";
             netCtx.lineWidth = 1.5;
           } else {
             const intensity = Math.min(1, Math.max(0, val));
-            netCtx.fillStyle = `rgba(56, 189, 248, ${0.15 + intensity * 0.85})`;
+            netCtx.fillStyle = `rgba(16, 185, 129, ${0.15 + intensity * 0.85})`;
             netCtx.strokeStyle = "#334155";
             netCtx.lineWidth = 1;
           }
           netCtx.fill();
           netCtx.stroke();
 
-          // Labels
           netCtx.fillStyle = "#f8fafc";
           netCtx.font = "10px monospace";
           netCtx.textAlign = "center";
@@ -890,7 +919,6 @@
       }
     }
 
-    // High-Contrast Vivid Multi-Class Decision Surface
     function drawBoundary() {
       const actType = document.querySelector(".act-btn.active")?.dataset.act || "relu";
       const imgData = offscreenCtx.createImageData(offscreenW, offscreenH);
@@ -917,27 +945,25 @@
           const probs = predictProbs([f0, f1, f2, f3], actType);
           const p0 = probs[0], p1 = probs[1], p2 = probs[2];
 
-          // Exponentiated weighting to sharpen decision boundaries
           const w0 = Math.pow(p0, 5.0);
           const w1 = Math.pow(p1, 5.0);
           const w2 = Math.pow(p2, 5.0);
           const sumW = Math.max(1e-6, w0 + w1 + w2);
 
-          // Calibrated Vibrant Palette:
-          // Setosa (0): Electric Mint Teal [20, 184, 166]
-          // Versicolor (1): Solar Amber [245, 158, 11]
-          // Virginica (2): Royal Neon Purple [168, 85, 247]
-          let r = (w0 * 20 + w1 * 245 + w2 * 168) / sumW;
-          let g = (w0 * 184 + w1 * 158 + w2 * 85) / sumW;
-          let b = (w0 * 166 + w1 * 11 + w2 * 247) / sumW;
+          // Calibrated Aurora Palette:
+          // Setosa (0): Neon Mint Emerald [16, 185, 129]
+          // Versicolor (1): Solar Gold [251, 191, 36]
+          // Virginica (2): Neon Purple [168, 85, 247]
+          let r = (w0 * 16 + w1 * 251 + w2 * 168) / sumW;
+          let g = (w0 * 185 + w1 * 191 + w2 * 85) / sumW;
+          let b = (w0 * 129 + w1 * 36 + w2 * 247) / sumW;
 
-          // Confidence-driven luminance modulation over dark base (#0c1220 = [12, 18, 32])
           const maxP = Math.max(p0, p1, p2);
           const intensity = Math.min(1.0, Math.max(0.18, (maxP - 0.33) * 1.5 + 0.25));
 
-          r = Math.round(r * intensity + 12 * (1 - intensity));
-          g = Math.round(g * intensity + 18 * (1 - intensity));
-          b = Math.round(b * intensity + 32 * (1 - intensity));
+          r = Math.round(r * intensity + 9 * (1 - intensity));
+          g = Math.round(g * intensity + 14 * (1 - intensity));
+          b = Math.round(b * intensity + 28 * (1 - intensity));
 
           const idx = (py * offscreenW + px) * 4;
           data[idx] = r;
@@ -949,14 +975,12 @@
 
       offscreenCtx.putImageData(imgData, 0, 0);
 
-      // Smooth Bilinear Upscaling to 300x300 Canvas
       const w = boundaryCanvas.width;
       const h = boundaryCanvas.height;
       boundaryCtx.imageSmoothingEnabled = true;
       boundaryCtx.imageSmoothingQuality = "high";
       boundaryCtx.drawImage(offscreenCanvas, 0, 0, w, h);
 
-      // Draw Subtle Coordinate Crosshairs
       boundaryCtx.strokeStyle = "rgba(255, 255, 255, 0.15)";
       boundaryCtx.lineWidth = 1;
       boundaryCtx.beginPath();
@@ -966,7 +990,6 @@
       boundaryCtx.lineTo(w, h / 2);
       boundaryCtx.stroke();
 
-      // Plot Real Iris Scatter Points with High-Contrast Halo Rings
       for (let s of IRIS_DATA) {
         const x1 = activeProjection === "petal" ? s[2] : s[0];
         const x2 = activeProjection === "petal" ? s[3] : s[1];
@@ -975,16 +998,14 @@
         const cx = ((x1 / 4.6) + 0.5) * w;
         const cy = ((-x2 / 4.6) + 0.5) * h;
 
-        // Outer dark ring
         boundaryCtx.beginPath();
         boundaryCtx.arc(cx, cy, 5.5, 0, Math.PI * 2);
-        boundaryCtx.fillStyle = "#07090e";
+        boundaryCtx.fillStyle = "#040711";
         boundaryCtx.fill();
 
-        // Inner glowing colored core
         boundaryCtx.beginPath();
         boundaryCtx.arc(cx, cy, 4, 0, Math.PI * 2);
-        boundaryCtx.fillStyle = label === 0 ? "#14b8a6" : (label === 1 ? "#f59e0b" : "#a855f7");
+        boundaryCtx.fillStyle = label === 0 ? "#10b981" : (label === 1 ? "#fbbf24" : "#a855f7");
         boundaryCtx.fill();
         boundaryCtx.lineWidth = 1.2;
         boundaryCtx.strokeStyle = "#ffffff";
@@ -992,14 +1013,12 @@
       }
     }
 
-    // Real-Time Loss Trajectory Canvas
     function drawLoss() {
       const w = lossCanvas.width;
       const h = lossCanvas.height;
       lossCtx.clearRect(0, 0, w, h);
 
-      // Grid Lines
-      lossCtx.strokeStyle = "#1e293b";
+      lossCtx.strokeStyle = "#162035";
       lossCtx.lineWidth = 1;
       lossCtx.beginPath();
       for (let y = 15; y < h; y += 24) {
@@ -1011,7 +1030,6 @@
       const cfg = CONFIGS[currentExp];
       const maxEp = cfg.maxEp;
 
-      // EarlyStopping Rollback Marker (Dashed Line)
       const rollbackX = (cfg.bestEp / maxEp) * (w - 20) + 10;
       lossCtx.beginPath();
       lossCtx.setLineDash([3, 3]);
@@ -1046,8 +1064,8 @@
         lossCtx.stroke();
       }
 
-      plotCurve(lossHistory, "#f59e0b");    // Train: Solar Amber
-      plotCurve(valLossHistory, "#fb7185"); // Val: Rose
+      plotCurve(lossHistory, "#fbbf24");    // Train: Solar Gold
+      plotCurve(valLossHistory, "#f43f5e"); // Val: Rose
     }
 
     function drawAll() {
@@ -1062,7 +1080,6 @@
       document.getElementById("trainLossDisplay").textContent = cfg.testLoss;
       document.getElementById("maxEpochDisplay").textContent = `/ ${cfg.maxEp}`;
 
-      // Update KPI Cards
       document.getElementById("metricTestAcc").textContent = cfg.testAcc;
       document.getElementById("metricMacroF1").textContent = cfg.macroF1;
       document.getElementById("metricTestLoss").textContent = cfg.testLoss;
@@ -1070,13 +1087,12 @@
       document.getElementById("metricMaxEp").textContent = `Epoch ${cfg.maxEp}`;
       document.getElementById("metricTime").textContent = cfg.time;
 
-      // Highlight active row in ablation table
       document.querySelectorAll("tbody tr").forEach(tr => {
-        tr.classList.remove("bg-sky-950/50", "border-l-4", "border-sky-400");
+        tr.classList.remove("bg-emerald-950/40", "border-l-4", "border-emerald-400");
       });
       const activeRow = document.getElementById(`row-${currentExp}`);
       if (activeRow) {
-        activeRow.classList.add("bg-sky-950/50", "border-l-4", "border-sky-400");
+        activeRow.classList.add("bg-emerald-950/40", "border-l-4", "border-emerald-400");
       }
     }
 
@@ -1086,14 +1102,12 @@
       pause();
       initModel();
 
-      // Automatically sync hyperparameter buttons to the experiment definition
       const cfg = CONFIGS[key];
       document.querySelectorAll(".lr-btn").forEach(b => {
         b.classList.toggle("active", parseFloat(b.dataset.lr) === cfg.lr);
       });
     }
 
-    // Play / Pause Handlers
     function play() {
       if (isPlaying) return;
       const cfg = CONFIGS[currentExp];
@@ -1143,7 +1157,6 @@
       selectExp(e.target.value);
     });
 
-    // Learning Rate Switcher
     document.querySelectorAll(".lr-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         document.querySelectorAll(".lr-btn").forEach(b => b.classList.remove("active"));
@@ -1151,7 +1164,6 @@
       });
     });
 
-    // Activation Switcher
     document.querySelectorAll(".act-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         document.querySelectorAll(".act-btn").forEach(b => b.classList.remove("active"));
@@ -1160,7 +1172,6 @@
       });
     });
 
-    // Projection Switcher
     document.querySelectorAll(".proj-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         document.querySelectorAll(".proj-btn").forEach(b => b.classList.remove("active"));
@@ -1171,7 +1182,6 @@
       });
     });
 
-    // Speed Switcher
     document.querySelectorAll(".spd-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         document.querySelectorAll(".spd-btn").forEach(b => b.classList.remove("active"));
@@ -1184,7 +1194,22 @@
       });
     });
 
-    // Keyboard Shortcuts: Spacebar (Play/Pause), S (Step), R (Reset), 0-6 (Select Exp)
+    // Theme Switcher Logic
+    document.querySelectorAll(".theme-btn").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const theme = e.target.dataset.setTheme;
+        document.documentElement.setAttribute("data-theme", theme);
+        document.querySelectorAll(".theme-btn").forEach(b => {
+          b.classList.remove("bg-slate-800/80", "font-bold", "text-white");
+          b.classList.add("text-slate-400");
+        });
+        e.target.classList.add("bg-slate-800/80", "font-bold", "text-white");
+        e.target.classList.remove("text-slate-400");
+        drawAll();
+      });
+    });
+
+    // Keyboard Shortcuts
     window.addEventListener("keydown", (e) => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
       if (e.code === "Space") {
@@ -1202,7 +1227,7 @@
       }
     });
 
-    // Interactive Decision Boundary Hover HUD
+    // Hover HUD
     const hud = document.getElementById("boundaryHoverHUD");
     const hudCoords = document.getElementById("hudCoords");
     const hudProbs = document.getElementById("hudProbs");
@@ -1235,7 +1260,7 @@
       const p2 = Math.round(probs[2] * 100);
 
       hudCoords.textContent = activeProjection === "petal" ? `Petal L: ${xCoord.toFixed(2)}, Petal W: ${yCoord.toFixed(2)}` : `Sepal L: ${xCoord.toFixed(2)}, Sepal W: ${yCoord.toFixed(2)}`;
-      hudProbs.innerHTML = `<span class="text-teal-400">Setosa: ${p0}%</span> | <span class="text-amber-400">Versi: ${p1}%</span> | <span class="text-purple-400">Virg: ${p2}%</span>`;
+      hudProbs.innerHTML = `<span class="text-emerald-400">Setosa: ${p0}%</span> | <span class="text-amber-400">Versi: ${p1}%</span> | <span class="text-purple-400">Virg: ${p2}%</span>`;
       hud.classList.remove("hidden");
     });
 
@@ -1243,7 +1268,7 @@
       hud.classList.add("hidden");
     });
 
-    // Synapse & Neuron Hover Inspection
+    // Synapse Hover Inspection
     netCanvas.addEventListener("mousemove", (evt) => {
       const rect = netCanvas.getBoundingClientRect();
       const mx = evt.clientX - rect.left;
@@ -1257,7 +1282,7 @@
           if (dist <= radius + 4) {
             const val = (activations[l] && activations[l][i] !== undefined) ? activations[l][i].toFixed(4) : "0.0000";
             const layerLabel = l === 0 ? "Input Feature" : (l === nodePositions.length - 1 ? "Output Class" : `Hidden Layer ${l}`);
-            document.getElementById("synapseHoverInfo").innerHTML = `<span class="text-sky-400 font-bold">${layerLabel} Node #${i + 1}</span> &bull; Activation: <span class="text-amber-300 font-bold">${val}</span>`;
+            document.getElementById("synapseHoverInfo").innerHTML = `<span class="text-emerald-400 font-bold">${layerLabel} Node #${i + 1}</span> &bull; Activation: <span class="text-amber-300 font-bold">${val}</span>`;
             hovered = true;
             break;
           }
@@ -1270,7 +1295,6 @@
       }
     });
 
-    // Initialization
     window.addEventListener("resize", () => {
       resizeNetworkCanvas();
       drawBoundary();
@@ -1279,7 +1303,6 @@
     window.addEventListener("DOMContentLoaded", () => {
       resizeNetworkCanvas();
       initModel();
-      // Pre-run 5 epochs so the playground immediately greets the user with vivid decision zones
       stepForward(5);
     });
   </script>
